@@ -4,13 +4,11 @@ DDS-Mamba v1 is a manifest-locked, trainable long-term RGB visual tracker. The
 canonical network is MAE ViT-B/16 for frozen template--search features plus
 DINOv2 ViT-S/14 for frozen identity features, a two-layer position selective
 SSM, a four-layer appearance selective SSM, a Kalman state, QACU, and an RFMB.
-The exact algorithm is defined by the immutable manifests, not by command-line
-defaults.
+
 
 This repository contains complete source for training, validation, prediction,
 official-layout adapters, immutable ablations, three-seed launch, sequence
-bootstrap confidence intervals, and CUDA runtime measurement. It contains no
-trained DDS-Mamba checkpoint and no public-benchmark score.
+bootstrap confidence intervals, and CUDA runtime measurement. 
 
 ## Locked assets and manifests
 
