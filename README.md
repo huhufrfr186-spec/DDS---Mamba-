@@ -121,10 +121,3 @@ Measure device-resident controller-plus-model latency after 100 warm-up frames:
 The timing protocol excludes disk I/O, decode, and host-to-device transfer;
 the JSON labels it accordingly.
 
-## Evidence status
-
-The deterministic DDS-Synthetic-LongTerm-v1 controller regression is included
-under data/ and results/. Its figures are not public-benchmark results. The
-LaSOT, Anti-UAV300, WebUAV-3M, and VTUAV protocols are implemented but have
-not been executed in this workspace because no CUDA/PyTorch runtime, assets,
-trained weights, or datasets are mounted.
