@@ -1,0 +1,25 @@
+seed: 20260711
+data_root: /path/to/LaSOT
+output_dir: outputs/lasot_seed_20260711
+# Required for a paper run when the method's frozen encoders are released.
+encoder_checkpoint: null
+identity_checkpoint: null
+epochs: 20
+batch_size: 4
+workers: 4
+clip_length: 8
+template_size: 128
+search_size: 256
+lr: 0.0002
+weight_decay: 0.0001
+grad_clip: 1.0
+model:
+  d_model: 256
+  d_state: 16
+  expand: 2
+  dt_rank: 16
+  pos_layers: 2
+  app_layers: 4
+  patch: 16
+  freeze_encoder: false
+  freeze_identity: false

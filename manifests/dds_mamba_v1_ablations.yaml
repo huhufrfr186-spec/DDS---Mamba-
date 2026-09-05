@@ -1,0 +1,47 @@
+schema_version: 1
+name: DDS-Mamba-v1-ablation-matrix
+immutable: true
+base_manifest_sha256: a6d59a16e9f40f49fd51866287ad8832662b3e2f900d264343722d1a9b54f205
+variants:
+  full:
+    description: Reference DDS-Mamba-v1.
+    network:
+      bound_gate: true
+    online: {}
+  tied_state:
+    description: Tie the committed position and appearance vectors after every active commit and recovery; neural stacks remain otherwise unchanged.
+    network:
+      bound_gate: true
+    online:
+      shared_state: true
+  unprojected_gate:
+    description: Use the positive unprojected gate 1 + eta(N softmax(logits/tau)-1), without the unit-mean box projection.
+    network:
+      bound_gate: false
+    online: {}
+  no_qacu:
+    description: On every accepted active commit, copy the raw appearance proposal instead of using QACU interpolation.
+    network:
+      bound_gate: true
+    online:
+      enable_qacu: false
+  no_rfmb:
+    description: Disable RFMB reads and writes and set capacity to zero.
+    network:
+      bound_gate: true
+    online:
+      enable_rfmb: false
+      memory_capacity: 0
+  no_identity_gate:
+    description: Ignore the initial identity reference and apply the fallback controller gates on every sequence.
+    network:
+      bound_gate: true
+    online:
+      use_identity: false
+  no_kalman_cache:
+    description: Use b_last as the lost-mode prior and accept the first eligible lost candidate; no Kalman update or two-frame cache confirmation.
+    network:
+      bound_gate: true
+    online:
+      use_kalman: false
+      use_candidate_cache: false

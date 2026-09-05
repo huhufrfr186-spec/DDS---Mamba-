@@ -1,0 +1,92 @@
+schema_version: 1
+name: DDS-Mamba-v1-causal-controls
+immutable: true
+base_manifest_sha256: a6d59a16e9f40f49fd51866287ad8832662b3e2f900d264343722d1a9b54f205
+variants:
+  full:
+    description: Reference DDS-Mamba-v1 with Mamba-style selective SSMs in both branches.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online: {}
+  dual_gru_control:
+    description: Replace both selective-SSM branches with causal GRUs; retain every encoder, token order, head, controller threshold, and update rule.
+    network:
+      bound_gate: true
+      position_operator: gru
+      appearance_operator: gru
+    online: {}
+  dual_mlp_control:
+    description: Replace both selective-SSM branches with causal prefix-MLP stacks; retain every other component.
+    network:
+      bound_gate: true
+      position_operator: mlp
+      appearance_operator: mlp
+    online: {}
+  dual_transformer_control:
+    description: Replace both selective-SSM branches with causal Transformer encoders; retain every other component.
+    network:
+      bound_gate: true
+      position_operator: transformer
+      appearance_operator: transformer
+    online: {}
+  position_mlp_control:
+    description: Replace only the position selective-SSM branch with the causal prefix-MLP control.
+    network:
+      bound_gate: true
+      position_operator: mlp
+      appearance_operator: mamba
+    online: {}
+  appearance_mlp_control:
+    description: Replace only the appearance selective-SSM branch with the causal prefix-MLP control.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mlp
+    online: {}
+  no_kalman_only:
+    description: Disable only the Kalman filter.  The two-frame candidate cache remains enabled.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online:
+      use_kalman: false
+      use_candidate_cache: true
+  no_candidate_cache_only:
+    description: Disable only two-frame candidate-cache confirmation.  The Kalman filter remains enabled.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online:
+      use_kalman: true
+      use_candidate_cache: false
+  no_kalman_cache_joint:
+    description: Jointly disable the Kalman filter and candidate cache; report only as the joint recovery-subsystem intervention.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online:
+      use_kalman: false
+      use_candidate_cache: false
+  neutral_identity_evidence:
+    description: Keep the standard identity-aware thresholds and DINO forward path, but replace every controller and write identity score by 1.0.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online:
+      use_identity: true
+      neutral_identity_evidence: true
+  tied_active_state_only:
+    description: Tie position and appearance only after active commits; recovery leaves the appearance state unchanged.
+    network:
+      bound_gate: true
+      position_operator: mamba
+      appearance_operator: mamba
+    online:
+      shared_state: true
+      tie_recovery_state: false

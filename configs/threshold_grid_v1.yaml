@@ -1,0 +1,24 @@
+schema_version: 1
+name: DDS-Mamba-v1-validation-threshold-selection
+immutable: true
+base_manifest_sha256: a6d59a16e9f40f49fd51866287ad8832662b3e2f900d264343722d1a9b54f205
+selection:
+  benchmark: lasot_train_validation
+  objective: success_auc_21_thresholds
+  tie_break: prefer_baseline_then_lower_value
+  method: deterministic_coordinate_sweep
+  public_test_access: forbidden
+parameters:
+  measurement_map: [0.25, 0.30, 0.35]
+  fall_iou: [0.10, 0.15, 0.20]
+  measurement_identity: [0.45, 0.50, 0.55]
+  active_peak: [0.55, 0.60, 0.65]
+  commit_quality: [0.25, 0.30, 0.35]
+  active_identity: [0.50, 0.55, 0.60]
+  read_quality: [0.40, 0.50, 0.60]
+  reacquire_map: [0.30, 0.35, 0.40]
+  reacquire_peak: [0.75, 0.80, 0.85]
+  reacquire_identity: [0.55, 0.60, 0.65]
+  association_iou: [0.25, 0.30, 0.35]
+  association_embedding: [0.55, 0.60, 0.65]
+  recovery_iou: [0.20, 0.25, 0.30]

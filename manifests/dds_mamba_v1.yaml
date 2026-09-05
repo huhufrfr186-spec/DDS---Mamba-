@@ -1,0 +1,183 @@
+schema_version: 1
+name: DDS-Mamba-v1-MAE-DINOv2
+immutable: true
+asset_lock:
+  template_search_encoder:
+    architecture: MAE ViT-Base/16, 12 blocks, 12 heads, embed_dim=768
+    implementation: timm==1.0.19 model_name=vit_base_patch16_224
+    checkpoint_url: https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth
+    local_path: assets/mae_pretrain_vit_base.pth
+    checkpoint_sha256: aec5f0b68e5f3193a00b07bc65a37440db549c15b36b8bea242606cc40c4bc5d
+    checkpoint_bytes: 343249461
+    feature_tap: norm output of block 12; patch tokens only; no class token
+    template_input: 128
+    search_input: 256
+    patch_size: 16
+    normalization:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    frozen: true
+    target_conditioning: learned affine modulation of search patch tokens by mean template patch token
+  identity_encoder:
+    architecture: DINOv2 ViT-S/14, 12 blocks, 6 heads, embed_dim=384
+    implementation: timm==1.0.19 model_name=vit_small_patch14_dinov2.lvd142m
+    checkpoint_url: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth
+    local_path: assets/dinov2_vits14_pretrain.pth
+    checkpoint_sha256: b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9
+    checkpoint_bytes: 88283115
+    feature_tap: final normalized class token
+    input_size: 224
+    crop: half-open predicted image box; border replication; bilinear antialias; align_corners=false
+    normalization:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    frozen: true
+    output_dim: 384
+datasets:
+  lasot:
+    version: LaSOT CVPR-2019 Protocol II, official testing_set.txt (280 sequences), OPE
+    split_file: <LaSOT-root>/testing_set.txt; exactly 280 lines; required by adapter
+    evaluator: https://github.com/HengLan/LaSOT_Evaluation_Toolkit
+    modes: [success_auc, normalized_precision, precision]
+  anti_uav:
+    version: Anti-UAV300 RGB stream, single-UAV Track 1 protocol (initial box supplied)
+    split: test-dev public development split; never annual hidden test-challenge
+    evaluator: https://github.com/ZhaoJ9014/Anti-UAV
+    modality: rgb_only
+    absent_output: [0.0, 0.0, 0.0, 0.0]
+    no_track2_claim: true
+  webuav_3m:
+    version: WebUAV-3M Dataset V1.0, official Train=3520 / Val=200 / Test=780 release
+    split: Test
+    evaluator: https://github.com/983632847/WebUAV-3M
+    modalities: [rgb_only]
+    protocols: [overall_ope, attribute_ope, accuracy_ope, utusc_ope]
+  vtuav:
+    version: DUT-VTUAV-V RGB split, official long-term test_LT protocol
+    evaluator: https://github.com/zhang-pengyu/DUT-VTUAV
+    official_script: GenerateMat_LT_RGB_only.m
+    modalities: [visible_only]
+algorithm:
+  network:
+    d_model: 256
+    position_layers: 2
+    appearance_layers: 4
+    ssm_state: 16
+    ssm_expand: 2
+    ssm_convolution_kernel: 4
+    dt_rank: 16
+    gate_min: 0.25
+    gate_max: 4.0
+    gate_temperature: 1.0
+    gate_eta: 0.5
+    center_sigma_tokens: 1.5
+    alignment_sigma_tokens: 2.0
+    quality_eps: 1.0e-6
+    min_normalized_box: 1.0e-3
+  memory_reader:
+    topk: 5
+    threshold: 0.35
+    temperature: 0.10
+    kappa: 0.50
+    eps: 1.0e-6
+  kalman:
+    dt: 1.0
+    acceleration_std: [0.01, 0.01, 0.005, 0.005]
+    measurement_std: [0.04, 0.04, 0.02, 0.02]
+    initial_covariance: [0.04, 0.04, 0.02, 0.02, 0.10, 0.10, 0.05, 0.05]
+    reinitialize_multiplier: 4.0
+    reliability_floor: 0.001
+    covariance_jitter: 1.0e-9
+    covariance_eigen_floor: 1.0e-9
+  online:
+    crop_factor: 4.0
+    weak_crop_growth: 1.25
+    lost_crop_ratio: 2.0
+    lost_crop_growth: 1.5
+    lost_crop_ratio_max: 6.0
+    crop_min: 32.0
+    crop_max_factor: 2.0
+    crop_duplicate_epsilon: 0.0001
+    roi_valid: 0.50
+    fall_iou: 0.15
+    active_peak: 0.60
+    commit_quality: 0.30
+    measurement_map: 0.30
+    measurement_identity: 0.50
+    active_identity: 0.55
+    lost_limit: 3
+    reacquire_map: 0.35
+    reacquire_peak: 0.80
+    reacquire_identity: 0.60
+    reacquire_count: 2
+    association_iou: 0.30
+    association_embedding: 0.60
+    recovery_iou: 0.25
+    fallback_association_iou: 0.50
+    fallback_reacquire_map: 0.20
+    fallback_measurement_map: 0.15
+    fallback_commit_quality: 0.25
+    fallback_peak: 0.80
+    fallback_fall_iou: 0.15
+    beta_max: 0.95
+    ema: 0.95
+    memory_capacity: 100
+    memory_decay: 0.01
+    memory_duplicate: 0.95
+    memory_refresh_delta: 0.05
+    read_quality: 0.50
+    idle_age: 0.10
+    write_roi: 0.70
+    write_quality: 0.70
+    write_peak: 0.80
+    write_template_identity: 0.60
+    write_alignment_iou: 0.50
+    qacu_warmup_commits: 20
+    qacu_beta_min_warmup: 0.15
+    qacu_beta_min_intercept: 0.25
+    qacu_beta_min_slope: 0.20
+    qacu_beta_min_lower: 0.05
+    qacu_beta_min_upper: 0.25
+    min_box_size: 1.0
+    candidate_center_min_factor: -1.0
+    candidate_center_max_factor: 2.0
+    roundtrip_tolerance: 1.0e-5
+    shared_state: false
+    enable_qacu: true
+    enable_rfmb: true
+    use_identity: true
+    use_kalman: true
+    use_candidate_cache: true
+training:
+  freeze_asset_lock: true
+  teacher_forcing_epochs: 0.5
+  rfmb_teacher_epochs: 0.25
+  teacher_loss_weight: 1.0
+  synthetic_absent_probability: 0.25
+  clip_length: 16
+  detach_at_every_frame_boundary: true
+  losses:
+    box: 1.0
+    ctr: 1.0
+    decorr: 0.1
+    temp: 0.1
+    consist: 0.1
+    norm: 0.01
+    retr: 0.0
+    qnorm: 0.0
+    l1: 5.0
+    giou: 2.0
+    temp_margin: 0.15
+    id_margin: 0.5
+    absent_weight: 1.0
+    occluded_weight: 1.0
+    ctr_sigma: 1.5
+    focal_gamma: 2.0
+    focal_beta: 4.0
+    probability_eps: 1.0e-6
+    cosine_eps: 1.0e-6
+    target_clip_eps: 1.0e-3
+  random_seeds: [20260711, 20260712, 20260713]
+  validation_split: SHA256-ranked 224/1120 holdout using dds-mamba-v1-lasot-trainval-20260712; materialized by scripts/make_lasot_trainval_split.py
+  bootstrap_resamples: 10000
+  validation_success_threshold_count: 21

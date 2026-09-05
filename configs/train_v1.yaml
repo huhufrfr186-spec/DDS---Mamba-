@@ -1,0 +1,16 @@
+seed: 20260711
+manifest: manifests/dds_mamba_v1.yaml
+asset_dir: assets
+lasot_root: /path/to/LaSOT
+train_split: official_training_set
+validation_split: configs/splits/lasot_val_v1.json
+output_dir: outputs/dds_mamba_v1_seed_20260711
+epochs: 40
+batch_size: 1
+workers: 0
+clip_length: 16
+clips_per_sequence: 16
+lr: 0.0002
+weight_decay: 0.0001
+grad_clip: 1.0
+validate_every: 1
